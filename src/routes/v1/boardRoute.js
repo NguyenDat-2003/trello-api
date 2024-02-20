@@ -1,5 +1,6 @@
 import express from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { boardValidation } from '~/validations/boardValidation';
 
 const Router = express.Router();
 
@@ -9,10 +10,6 @@ Router.route('/')
             message: 'Get list status',
         });
     })
-    .post((req, res) => {
-        return res.status(StatusCodes.CREATED).json({
-            message: 'Create new status',
-        });
-    });
+    .post(boardValidation.createNew);
 
-export const boardRoutes = Router;
+export const boardRoute = Router;
