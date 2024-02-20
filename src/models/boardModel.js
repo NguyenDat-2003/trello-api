@@ -1,4 +1,5 @@
 import Joi from 'joi';
+import { ObjectId } from 'mongodb';
 import { GET_DB } from '~/config/mongodb';
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators';
 
@@ -9,11 +10,7 @@ const BOARD_COLLECTION_SCHEMA = Joi.object({
     description: Joi.string().required().min(3).max(256).trim().strict(),
 
     //--- Các item trong mảng columnOrderIds là một ObjectId nên cần thêm pattern chuẩn kiểu string ObjectId trong MongoDB
-    columnOrderIds: Joi.array()
-        .items(
-            Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
-        )
-        .default([]),
+    columnOrderIds: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
 
     createdAt: Joi.date().timestamp('javascript').default(Date.now),
     updatedAt: Joi.date().timestamp('javascript').default(null),
@@ -31,18 +28,27 @@ const createNew = async (data) => {
         //--- Kiểm tra data trước khi insert vào database
         const validData = await validateBeforeCreate(data);
 
-        return await GET_DB()
-            .collection(BOARD_COLLECTION_NAME)
-            .insertOne(validData);
+        return await GET_DB().collection(BOARD_COLLECTION_NAME).insertOne(validData);
     } catch (error) {
         throw new Error(error);
     }
 };
 const findOneById = async (id) => {
     try {
-        return await GET_DB().collection(BOARD_COLLECTION_NAME).findOne({
-            _id: id,
-        });
+        return await GET_DB()
+            .collection(BOARD_COLLECTION_NAME)
+            .findOne({ id: new ObjectId(id) });
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+const getDetail = async (boardId) => {
+    try {
+        return await GET_DB()
+            .collection(BOARD_COLLECTION_NAME)
+            .findOne({
+                _id: new ObjectId(boardId),
+            });
     } catch (error) {
         throw new Error(error);
     }
@@ -53,4 +59,5 @@ export const boardModel = {
     BOARD_COLLECTION_SCHEMA,
     createNew,
     findOneById,
+    getDetail,
 };
