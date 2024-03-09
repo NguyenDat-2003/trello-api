@@ -13,6 +13,6 @@ Router.route('/')
   })
   .post(boardValidation.createNew, boardController.createNewBoard)
 
-Router.route('/:id').get(boardController.getDetail).put()
+Router.route('/:id').get(boardController.getDetail).put(boardValidation.update, boardController.updateNewBoard)
 
 export const boardRoute = Router
