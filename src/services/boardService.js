@@ -3,6 +3,8 @@ import { cloneDeep } from 'lodash'
 import { boardModel } from '~/models/boardModel'
 import ApiError from '~/utils/ApiError'
 import slugify from '~/utils/slugify'
+import { cardModel } from '~/models/cardModel'
+import { columnModel } from '~/models/columnModel'
 
 /* eslint-disable no-empty */
 const createNew = async (reqBody) => {
@@ -63,4 +65,26 @@ const update = async (boardId, reqBody) => {
   }
 }
 
-export const boardService = { createNew, getDetail, update }
+const moveCardsToDifferentColumn = async (reqBody) => {
+  try {
+    // * B1: Cập nhật mảng cardOrderIds của Column ban đầu (Nghĩa là xóa cái _id của Card ra khỏi column ban đầu)
+    await columnModel.update(reqBody.prevColumnId, {
+      cardOrderIds: reqBody.prevCardOrderIds,
+      updatedAt: Date.now()
+    })
+    // * B2: Cập nhật mảng cardOrderIds của Column tiếp theo (Nghĩa là thêm cái _id của Card vào column mới)
+    await columnModel.update(reqBody.nextColumnId, {
+      cardOrderIds: reqBody.nextCardOrderIds,
+      updatedAt: Date.now()
+    })
+    // * B3: Cập nhật lại trường columnId mới của card đã kéo
+    await cardModel.update(reqBody.currentCardId, {
+      columnId: reqBody.nextColumnId
+    })
+    return { updateResult: 'Successfully!' }
+  } catch (error) {
+    throw error
+  }
+}
+
+export const boardService = { createNew, getDetail, update, moveCardsToDifferentColumn }
