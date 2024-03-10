@@ -19,7 +19,7 @@ const START_SERVER = () => {
   //--- Middleware Error Handling
   app.use(errorHandlingMiddleware)
 
-  // --- Đây là môi trường Production (Đang support Render.com)
+  // --- Đây là môi trường Production
   if (env.BUILD_MODE === 'production') {
     app.listen(process.env.PORT, () => {
       console.log(`2. Production ${env.AUTHOR}, I am running at PORT ${process.env.PORT}`)
